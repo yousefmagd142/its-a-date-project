@@ -1,0 +1,16 @@
+<div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <nav class="nav">
+        <a class="nav-link" href="/admin/invites">Invites</a>
+        <a class="nav-link" href="/admin/themes">Themes</a>
+        <a class="nav-link" href="/admin/submissions">Submissions</a>
+        <a class="nav-link" href="/admin/password">Change password</a>
+    </nav>
+    <form asp-controller="AdminAccount" asp-action="Logout" method="post" class="m-0">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-sm btn-outline-secondary">Log out</button>
+    </form>
+</div>
+@if (TempData["Flash"] is string flash)
+{
+    <div class="alert alert-info">@flash</div>
+}

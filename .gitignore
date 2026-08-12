@@ -1,0 +1,20 @@
+## .NET
+bin/
+obj/
+*.user
+
+## Real local secrets — never commit (appsettings.json in the repo ships with empty placeholders;
+## real values live here locally and in `dotnet user-secrets` only).
+appsettings.Development.json
+appsettings.*.local.json
+
+## Visual Studio
+.vs/
+
+## Rider / VS Code
+.idea/
+.vscode/
+
+## OS
+.DS_Store
+Thumbs.db

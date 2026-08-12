@@ -1,0 +1,36 @@
+@model List<Theme>
+@{
+    ViewData["Title"] = "Themes";
+    var counts = ViewData["InviteCounts"] as Dictionary<int, int> ?? new();
+}
+@await Html.PartialAsync("_AdminNav")
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Themes</h1>
+    <a class="btn btn-primary" href="/admin/themes/create">+ New theme</a>
+</div>
+
+<div class="row g-3">
+@foreach (var theme in Model)
+{
+    <div class="col-md-4">
+        <div class="border rounded p-3" style="background:linear-gradient(160deg,@theme.BgStart,@theme.BgEnd);">
+            <div class="rounded p-3 mb-2" style="background:@theme.CardBg;border:1px solid @theme.Border;">
+                <div class="fw-bold" style="color:@theme.Ink;">@theme.Name</div>
+                <div class="small" style="color:@theme.InkSoft;">sample text</div>
+                <span class="badge mt-2" style="background:linear-gradient(135deg,@theme.Accent,@theme.AccentDeep);color:#fff;">Yes</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="badge bg-secondary">@(counts.TryGetValue(theme.Id, out var c) ? c : 0) invite(s)</span>
+                <div>
+                    <a class="btn btn-sm btn-outline-primary" href="/admin/themes/@theme.Id/edit">Edit</a>
+                    <form asp-controller="AdminThemes" asp-action="Delete" asp-route-id="@theme.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this theme?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+</div>

@@ -1,0 +1,90 @@
+@model ThemeFormViewModel
+@{
+    (string Prop, string Label)[] colorFields =
+    {
+        (nameof(Model.BgStart), "Background start"),
+        (nameof(Model.BgEnd), "Background end"),
+        (nameof(Model.CardBg), "Card background"),
+        (nameof(Model.Ink), "Text"),
+        (nameof(Model.InkSoft), "Soft text"),
+        (nameof(Model.Accent), "Accent"),
+        (nameof(Model.AccentDeep), "Accent (deep)"),
+        (nameof(Model.AccentSoft), "Accent (soft)"),
+        (nameof(Model.Gold), "Gold"),
+        (nameof(Model.Border), "Border"),
+    };
+}
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <div class="alert alert-danger">@Model.Error</div>
+}
+<div class="row">
+    <div class="col-md-7">
+        <div class="mb-3">
+            <label class="form-label" asp-for="Name"></label>
+            <input asp-for="Name" class="form-control" id="theme-name" />
+        </div>
+        <div class="row row-cols-2 g-3">
+        @foreach (var (prop, label) in colorFields)
+        {
+            <div class="col">
+                <label class="form-label">@label</label>
+                <input type="color" class="form-control form-control-color w-100 theme-color" name="@prop" value="@(Model.GetType().GetProperty(prop)!.GetValue(Model))" data-var="@ToCssVar(prop)" />
+            </div>
+        }
+        </div>
+        <div class="mb-3 mt-3">
+            <label class="form-label" asp-for="ShadowRgba">Shadow (rgba)</label>
+            <input asp-for="ShadowRgba" class="form-control" id="theme-shadow" />
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+    <div class="col-md-5">
+        <label class="form-label">Live preview</label>
+        <div id="preview-stage" style="border-radius:16px;padding:2rem 1rem;display:flex;align-items:center;justify-content:center;min-height:260px;">
+            <div id="preview-card" style="border-radius:20px;padding:1.5rem;text-align:center;width:220px;">
+                <div id="preview-eyebrow" style="font-size:0.85rem;">a very important question</div>
+                <div id="preview-headline" style="font-weight:700;font-style:italic;font-size:1.2rem;margin:0.3rem 0;">Will you go on a date with me?</div>
+                <div id="preview-sub" style="font-size:0.75rem;margin-bottom:0.8rem;">Take your time.</div>
+                <span id="preview-yes" style="display:inline-block;padding:0.5rem 1rem;border-radius:999px;color:#fff;font-size:0.85rem;">Yes 💗</span>
+                <span id="preview-no" style="display:inline-block;padding:0.5rem 1rem;border-radius:999px;font-size:0.85rem;margin-inline-start:0.4rem;">No</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string ToCssVar(string prop) => prop switch
+    {
+        "BgStart" => "bg-1", "BgEnd" => "bg-2", "CardBg" => "card-bg", "Ink" => "ink", "InkSoft" => "ink-soft",
+        "Accent" => "accent", "AccentDeep" => "accent-deep", "AccentSoft" => "accent-soft", "Gold" => "gold", "Border" => "border",
+        _ => prop.ToLowerInvariant()
+    };
+}
+
+<script>
+(function(){
+  function val(name){ var el = document.querySelector('[name="' + name + '"]'); return el ? el.value : ''; }
+  function render(){
+    var vars = {
+      '--bg-1': val('BgStart'), '--bg-2': val('BgEnd'), '--card-bg': val('CardBg'),
+      '--ink': val('Ink'), '--ink-soft': val('InkSoft'), '--accent': val('Accent'),
+      '--accent-deep': val('AccentDeep'), '--accent-soft': val('AccentSoft'),
+      '--gold': val('Gold'), '--border': val('Border')
+    };
+    var stage = document.getElementById('preview-stage');
+    var card = document.getElementById('preview-card');
+    stage.style.background = 'linear-gradient(160deg,' + vars['--bg-1'] + ',' + vars['--bg-2'] + ')';
+    card.style.background = vars['--card-bg'];
+    card.style.border = '1px solid ' + vars['--border'];
+    document.getElementById('preview-eyebrow').style.color = vars['--accent-deep'];
+    document.getElementById('preview-headline').style.color = vars['--ink'];
+    document.getElementById('preview-sub').style.color = vars['--ink-soft'];
+    document.getElementById('preview-yes').style.background = 'linear-gradient(135deg,' + vars['--accent'] + ',' + vars['--accent-deep'] + ')';
+    document.getElementById('preview-no').style.background = vars['--accent-soft'];
+    document.getElementById('preview-no').style.color = vars['--ink'];
+  }
+  document.querySelectorAll('.theme-color').forEach(function(el){ el.addEventListener('input', render); });
+  render();
+})();
+</script>

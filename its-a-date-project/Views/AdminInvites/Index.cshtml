@@ -1,0 +1,59 @@
+@model List<Invite>
+@{
+    ViewData["Title"] = "Invites";
+}
+@await Html.PartialAsync("_AdminNav")
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Invites</h1>
+    <a class="btn btn-primary" href="/admin/invites/create">+ New invite</a>
+</div>
+
+<table class="table align-middle">
+    <thead>
+        <tr>
+            <th>Slug</th>
+            <th>URL</th>
+            <th>Theme</th>
+            <th>Recipient email</th>
+            <th>Default lang</th>
+            <th>Active</th>
+            <th>Default</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var invite in Model)
+    {
+        <tr>
+            <td>@invite.Slug</td>
+            <td><a href="/i/@invite.Slug" target="_blank">/i/@invite.Slug</a></td>
+            <td>@invite.Theme?.Name</td>
+            <td>@(string.IsNullOrEmpty(invite.RecipientEmail) ? "—" : invite.RecipientEmail)</td>
+            <td>@invite.DefaultLanguage</td>
+            <td>@(invite.IsActive ? "Yes" : "No")</td>
+            <td>
+                @if (invite.IsDefault)
+                {
+                    <span class="badge bg-success">Default</span>
+                }
+                else
+                {
+                    <form asp-controller="AdminInvites" asp-action="SetDefault" asp-route-id="@invite.Id" method="post" class="m-0">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">Set default</button>
+                    </form>
+                }
+            </td>
+            <td class="text-nowrap">
+                <a class="btn btn-sm btn-outline-primary" href="/admin/invites/@invite.Id/edit">Edit</a>
+                <a class="btn btn-sm btn-outline-primary" href="/admin/invites/@invite.Id/text">Text</a>
+                <form asp-controller="AdminInvites" asp-action="Delete" asp-route-id="@invite.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this invite?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

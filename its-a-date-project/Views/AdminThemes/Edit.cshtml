@@ -1,0 +1,11 @@
+@model ThemeFormViewModel
+@{
+    ViewData["Title"] = "Edit Theme";
+}
+@await Html.PartialAsync("_AdminNav")
+
+<h1 class="mb-4">Edit Theme: @Model.Name</h1>
+<form asp-controller="AdminThemes" asp-action="Edit" asp-route-id="@Model.Id" method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("_ThemeForm", Model)
+</form>

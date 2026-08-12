@@ -1,0 +1,41 @@
+@model InviteFormViewModel
+@{
+    ViewData["Title"] = "New Invite";
+}
+@await Html.PartialAsync("_AdminNav")
+
+<h1 class="mb-4">New Invite</h1>
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <div class="alert alert-danger">@Model.Error</div>
+}
+<form asp-controller="AdminInvites" asp-action="Create" method="post" class="col-md-6">
+    @Html.AntiForgeryToken()
+    <div class="mb-3">
+        <label class="form-label" asp-for="Slug"></label>
+        <input asp-for="Slug" class="form-control" placeholder="e.g. sara-birthday" />
+        <div class="form-text">Used in the URL: /i/&lt;slug&gt;. Lowercase letters, numbers, hyphens only.</div>
+        <span asp-validation-for="Slug" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" asp-for="ThemeId">Theme</label>
+        <select asp-for="ThemeId" class="form-select" asp-items="@(new SelectList(Model.AvailableThemes, "Id", "Name"))"></select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" asp-for="RecipientEmail"></label>
+        <input asp-for="RecipientEmail" class="form-control" placeholder="where the date notification email goes" />
+        <span asp-validation-for="RecipientEmail" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" asp-for="DefaultLanguage">Default language</label>
+        <select asp-for="DefaultLanguage" class="form-select">
+            <option value="en">English</option>
+            <option value="ar">Arabic</option>
+        </select>
+    </div>
+    <div class="form-check mb-3">
+        <input asp-for="IsActive" class="form-check-input" />
+        <label class="form-check-label" asp-for="IsActive">Active</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>

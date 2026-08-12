@@ -1,0 +1,39 @@
+@model InviteTextEditViewModel
+@{
+    ViewData["Title"] = "Edit Text";
+}
+@await Html.PartialAsync("_AdminNav")
+
+<h1 class="mb-1">Edit Text: @Model.Slug</h1>
+<p class="text-muted">21 strings, English and Arabic side by side. <code>ThanksMessageTemplate</code> must keep the <code>{date}</code> and <code>{time}</code> placeholders.</p>
+@if (!string.IsNullOrEmpty(Model.Success))
+{
+    <div class="alert alert-success">@Model.Success</div>
+}
+
+<form asp-controller="AdminInvites" asp-action="Text" asp-route-id="@Model.InviteId" method="post">
+    @Html.AntiForgeryToken()
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th style="width:14%">Key</th>
+                <th style="width:43%">English</th>
+                <th style="width:43%">Arabic</th>
+            </tr>
+        </thead>
+        <tbody>
+        @for (var i = 0; i < Model.Fields.Count; i++)
+        {
+            <tr>
+                <td class="text-nowrap"><code>@Model.Fields[i].Key</code>
+                    <input type="hidden" asp-for="Fields[i].Key" />
+                </td>
+                <td><textarea asp-for="Fields[i].English" class="form-control" rows="2" dir="ltr"></textarea></td>
+                <td><textarea asp-for="Fields[i].Arabic" class="form-control" rows="2" dir="rtl"></textarea></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-primary">Save text</button>
+    <a class="btn btn-outline-secondary" href="/i/@Model.Slug" target="_blank">Preview →</a>
+</form>
