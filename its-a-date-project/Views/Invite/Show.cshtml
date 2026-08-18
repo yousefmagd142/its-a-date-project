@@ -83,7 +83,7 @@
   }
   @@media (prefers-reduced-motion: reduce){
     .hearts span{animation:none;display:none;}
-    .card, #yes-btn, #no-btn, #submit-btn, .burst span, .heart-burst-item{transition:none !important; animation:none !important;}
+    .card, #yes-btn, #no-btn, #submit-btn, .burst span, .heart-burst-item, .sticker-heart{transition:none !important; animation:none !important;}
   }
   @@keyframes float{
     0%{transform:translateY(0) rotate(0deg);opacity:0;}
@@ -95,6 +95,11 @@
     0%,100%{box-shadow:0 10px 24px -8px var(--shadow);}
     50%{box-shadow:0 12px 30px -4px var(--accent);}
   }
+  @@keyframes heartGlow{
+    0%,100%{ filter:drop-shadow(0 0 4px var(--accent)) drop-shadow(0 0 2px var(--accent)); opacity:0.65; }
+    50%{ filter:drop-shadow(0 0 26px var(--accent)) drop-shadow(0 0 14px var(--accent)) drop-shadow(0 0 6px #fff); opacity:1; }
+  }
+  .sticker-heart{ animation:heartGlow 1.8s ease-in-out infinite; }
   @@keyframes wiggle{
     0%,100%{transform:rotate(0deg);}
     25%{transform:rotate(-5deg);}
@@ -388,21 +393,60 @@
   // Real SVG hearts (not emoji) so they always take the theme's own colors —
   // emoji glyphs like 💗 carry their own built-in color and ignore CSS `color`.
   var HEART_PATH = 'M23.6 0c-3 0-5.7 1.6-7.6 4.3C14.1 1.6 11.4 0 8.4 0 3.8 0 0 3.9 0 8.9c0 8.7 12.4 16.7 15.4 19.1.3.3.8.3 1.1 0C19.6 25.6 32 17.6 32 8.9 32 3.9 28.2 0 23.6 0z';
-  var HEART_COLORS = ['var(--accent)', 'var(--accent-deep)', 'var(--accent-soft)', 'var(--gold)'];
+  // One hue for every heart — variety comes from randomized saturation/lightness per instance
+  // (via CSS filter) rather than mixing in different theme colors.
+  var HEART_COLOR = 'var(--accent)';
+  var STICKER_OUTLINE = '#4a3b3f';
 
-  function makeHeartIcon(colorVar, sizeRem){
+  function randomHeartFilter(){
+    var saturate = 45 + Math.random() * 90;   // 45%–135%
+    var brightness = 85 + Math.random() * 35; // 85%–120%
+    return 'saturate(' + saturate.toFixed(0) + '%) brightness(' + brightness.toFixed(0) + '%)';
+  }
+
+  // "Sticker" heart — thick outline, glossy fill, star + sparkle accent — with its own glow-pulse
+  // animation (.sticker-heart, defined above) applied to the <svg> itself, independent of the
+  // outer span's drift animation.
+  function stickerHeartMarkup(fillColor){
+    return '<svg class="sticker-heart" viewBox="0 0 100 100" width="100%" height="100%" style="display:block;overflow:visible;">' +
+      '<path d="M50 32C50 32 39 12 20 12C8 12 2 22 2 34C2 58 50 88 50 88C50 88 98 58 98 34C98 22 92 12 80 12C61 12 50 32 50 32Z" ' +
+        'fill="' + fillColor + '" stroke="' + STICKER_OUTLINE + '" stroke-width="7" stroke-linejoin="round"/>' +
+      '<g transform="translate(-4,-2) scale(0.85)">' +
+        '<path d="M18 0 L22 12 L34 16 L22 20 L18 32 L14 20 L2 16 L14 12 Z" fill="var(--gold)" stroke="' + STICKER_OUTLINE + '" stroke-width="3" stroke-linejoin="round"/>' +
+      '</g>' +
+      '<g transform="translate(30,2) scale(0.45)">' +
+        '<path d="M10 0 L12 8 L20 10 L12 12 L10 20 L8 12 L0 10 L8 8 Z" fill="#fff6da" stroke="' + STICKER_OUTLINE + '" stroke-width="4" stroke-linejoin="round"/>' +
+      '</g>' +
+    '</svg>';
+  }
+
+  function makeHeartIcon(colorVar, sizeRem, variant){
     var span = document.createElement('span');
     span.style.display = 'inline-block';
-    span.style.width = sizeRem + 'rem';
+    span.style.width = (variant === 'double' ? sizeRem * 1.4 : sizeRem) + 'rem';
     span.style.height = sizeRem + 'rem';
     span.style.color = colorVar;
-    span.innerHTML = '<svg viewBox="0 0 32 29" width="100%" height="100%" style="display:block;"><path fill="currentColor" d="' + HEART_PATH + '"/></svg>';
+    span.style.filter = randomHeartFilter();
+    if (variant === 'sticker'){
+      span.innerHTML = stickerHeartMarkup(colorVar);
+    } else if (variant === 'double'){
+      // Two overlapping hearts, one couple's-symbol icon — the back heart sits slightly lower/behind
+      // and a touch more transparent so it clearly reads as a pair, not a smudge.
+      span.innerHTML = '<svg viewBox="0 0 46 34" width="100%" height="100%" style="display:block;">' +
+          '<path fill="currentColor" opacity="0.75" transform="translate(0,5) scale(0.78)" d="' + HEART_PATH + '"/>' +
+          '<path fill="currentColor" transform="translate(14,0) scale(0.78)" d="' + HEART_PATH + '"/>' +
+        '</svg>';
+    } else {
+      span.innerHTML = '<svg viewBox="0 0 32 29" width="100%" height="100%" style="display:block;"><path fill="currentColor" d="' + HEART_PATH + '"/></svg>';
+    }
     return span;
   }
 
   var heartsHost = document.getElementById('hearts');
   for (var i = 0; i < 22; i++){
-    var s = makeHeartIcon(HEART_COLORS[i % HEART_COLORS.length], 1 + Math.random() * 1.3);
+    // Mix of plain hearts, double-hearts, and glowing sticker hearts for variety.
+    var variant = i % 6 === 3 ? 'sticker' : (i % 4 === 0 ? 'double' : 'single');
+    var s = makeHeartIcon(HEART_COLOR, 1 + Math.random() * 1.3, variant);
     s.style.left = (Math.random() * 100) + '%';
     s.style.animationDelay = (Math.random() * 11) + 's';
     s.style.animationDuration = (9 + Math.random() * 6) + 's';
@@ -422,7 +466,7 @@
   function heartBurst(x, y, count){
     if (reduceMotion()) return;
     for (var i = 0; i < count; i++){
-      var sp = makeHeartIcon(HEART_COLORS[i % HEART_COLORS.length], 1 + Math.random() * 0.8);
+      var sp = makeHeartIcon(HEART_COLOR, 1 + Math.random() * 0.8, i % 5 === 0 ? 'double' : 'single');
       sp.classList.add('heart-burst-item');
       var angle = Math.random() * Math.PI * 2;
       var dist = 60 + Math.random() * 110;
@@ -540,7 +584,7 @@
       var burst = document.getElementById('burst');
       burst.innerHTML = '';
       for (var i = 0; i < 16; i++){
-        var sp = makeHeartIcon(HEART_COLORS[i % HEART_COLORS.length], 1 + Math.random() * 0.5);
+        var sp = makeHeartIcon(HEART_COLOR, 1 + Math.random() * 0.5, i % 4 === 0 ? 'double' : 'single');
         sp.style.setProperty('--dx', (Math.random() * 160 - 80) + 'px');
         sp.style.left = (35 + Math.random() * 30) + '%';
         sp.style.animationDelay = (Math.random() * 0.3) + 's';

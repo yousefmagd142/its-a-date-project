@@ -3,8 +3,9 @@ bin/
 obj/
 *.user
 
-## Real local secrets — never commit (appsettings.json in the repo ships with empty placeholders;
-## real values live here locally and in `dotnet user-secrets` only).
+## Real local secrets — never commit. appsettings.json now holds real local values and is untracked
+## from here on (it was committed once with empty placeholders — that commit is unaffected).
+its-a-date-project/appsettings.json
 appsettings.Development.json
 appsettings.*.local.json
 
