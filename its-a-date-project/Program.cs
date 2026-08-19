@@ -53,6 +53,20 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 
 if (!app.Environment.IsDevelopment())
 {
+    // Send anyone hitting the default *.azurewebsites.net host (or any other host) straight to the
+    // real custom domain, in one hop — same app either way, this just keeps one canonical public URL.
+    const string CanonicalHost = "its-a-date.yousefaboelmagd.com";
+    app.Use(async (context, next) =>
+    {
+        if (!string.Equals(context.Request.Host.Host, CanonicalHost, StringComparison.OrdinalIgnoreCase))
+        {
+            var url = $"https://{CanonicalHost}{context.Request.Path}{context.Request.QueryString}";
+            context.Response.Redirect(url, permanent: true);
+            return;
+        }
+        await next();
+    });
+
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
