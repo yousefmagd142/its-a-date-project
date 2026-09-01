@@ -9,7 +9,7 @@ namespace its_a_date_project.Models
             "Eyebrow", "Headline", "Subhead", "YesButton", "NoButton",
             "DodgeLine1", "DodgeLine2", "DodgeLine3", "DodgeLine4", "DodgeLine5", "DodgeLine6",
             "PlanEyebrow", "PlanHeadline", "PlanSubhead", "DateLabel", "TimeLabel", "SubmitButton",
-            "ThanksEyebrow", "ThanksHeadline", "ThanksMessageTemplate", "LoveLine"
+            "ThanksEyebrow", "ThanksHeadline", "ThanksMessageTemplate", "LoveLine", "SentToLabel"
         };
     }
 

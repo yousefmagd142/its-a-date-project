@@ -30,6 +30,7 @@ namespace its_a_date_project.Data
             ["ThanksHeadline"] = "Thank you!",
             ["ThanksMessageTemplate"] = "I can't wait to see you on {date} at {time}.",
             ["LoveLine"] = "I love you so much.",
+            ["SentToLabel"] = "Sent to {name} 💌",
         };
 
         // Modern Standard Arabic translation (not machine-literal), feminine address, same emoji.
@@ -56,6 +57,7 @@ namespace its_a_date_project.Data
             ["ThanksHeadline"] = "شكرًا لكِ!",
             ["ThanksMessageTemplate"] = "لا أطيق الانتظار لرؤيتكِ يوم {date} الساعة {time}.",
             ["LoveLine"] = "أحبكِ كثيرًا.",
+            ["SentToLabel"] = "تم الإرسال إلى {name} 💌",
         };
 
         /// <summary>Seeds the Pink theme, the default "welcome" invite, its EN/AR text, and the admin password.
@@ -107,6 +109,8 @@ namespace its_a_date_project.Data
                 SeedDefaultTextFor(db, welcome.Id);
             }
 
+            BackfillMissingText(db);
+
             if (!db.AdminSettings.Any())
             {
                 generatedPassword = GenerateRandomPassword();
@@ -129,6 +133,37 @@ namespace its_a_date_project.Data
                 db.InviteTexts.Add(new InviteText { InviteId = inviteId, Language = "ar", Key = key, Value = ArabicText[key] });
             }
             db.SaveChanges();
+        }
+
+        /// <summary>Fills in any text key an existing invite is missing (e.g. a key added after that invite
+        /// was created, like SentToLabel) with the default EN/AR value, so older invites never hit a missing
+        /// key at render time. Runs on every startup — cheap no-op once everything's caught up.</summary>
+        public static void BackfillMissingText(AppDbContext db)
+        {
+            var existingKeys = new HashSet<(int InviteId, string Language, string Key)>(
+                db.InviteTexts.Select(t => new ValueTuple<int, string, string>(t.InviteId, t.Language, t.Key)));
+
+            var inviteIds = db.Invites.Select(i => i.Id).ToList();
+            var added = false;
+
+            foreach (var inviteId in inviteIds)
+            {
+                foreach (var key in TextKeys.All)
+                {
+                    if (!existingKeys.Contains((inviteId, "en", key)))
+                    {
+                        db.InviteTexts.Add(new InviteText { InviteId = inviteId, Language = "en", Key = key, Value = EnglishText[key] });
+                        added = true;
+                    }
+                    if (!existingKeys.Contains((inviteId, "ar", key)))
+                    {
+                        db.InviteTexts.Add(new InviteText { InviteId = inviteId, Language = "ar", Key = key, Value = ArabicText[key] });
+                        added = true;
+                    }
+                }
+            }
+
+            if (added) db.SaveChanges();
         }
 
         private static string GenerateRandomPassword()
